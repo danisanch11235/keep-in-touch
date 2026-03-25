@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keep In Touch</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #faf6f0;
+    --warm-white: #fff9f3;
+    --ink: #2c2416;
+    --ink-light: #6b5d4f;
+    --ink-faint: #c4b8ac;
+    --terracotta: #c0654a;
+    --terracotta-light: #e8c4b8;
+    --sage: #7a9e7e;
+    --sage-light: #c8deca;
+    --gold: #c9972c;
+    --gold-light: #f0e0b0;
+    --lavender: #8b7db8;
+    --lavender-light: #d8d0f0;
+    --overdue: #d94f38;
+    --soon: #c9972c;
+    --ok: #7a9e7e;
+    --shadow: 0 2px 20px rgba(44,36,22,0.08);
+    --shadow-hover: 0 8px 32px rgba(44,36,22,0.14);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(192,101,74,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(122,158,126,0.06) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app { position: relative; z-index: 1; max-width: 920px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* Header */
+  header { text-align: center; margin-bottom: 48px; }
+  header h1 {
+    font-family: 'Lora', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  header h1 em { color: var(--terracotta); font-style: italic; }
+  header p { margin-top: 10px; color: var(--ink-light); font-size: 0.95rem; font-weight: 300; }
+  .header-actions { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+  .btn-subtle {
+    padding: 7px 16px; border-radius: 8px; border: 1.5px solid var(--ink-faint);
+    background: transparent; font-family: 'DM Sans', sans-serif; font-size: 0.78rem;
+    font-weight: 500; color: var(--ink-light); cursor: pointer; transition: all 0.15s;
+  }
+  .btn-subtle:hover { border-color: var(--ink); color: var(--ink); background: white; }
+
+  /* Status bar */
+  .status-bar { display: flex; gap: 12px; margin-bottom: 32px; flex-wrap: wrap; }
+  .stat-pill {
+    display: flex; align-items: center; gap: 8px; padding: 8px 16px;
+    border-radius: 100px; font-size: 0.82rem; font-weight: 500; background: white; box-shadow: var(--shadow);
+  }
+  .stat-pill .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .stat-pill.overdue .dot { background: var(--overdue); }
+  .stat-pill.soon .dot { background: var(--soon); }
+  .stat-pill.ok .dot { background: var(--ok); }
+
+  /* Controls */
+  .controls { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; align-items: center; }
+  .search-wrap { flex: 1; min-width: 200px; position: relative; }
+  .search-wrap input {
+    width: 100%; padding: 10px 16px 10px 40px; border: 1.5px solid var(--ink-faint);
+    border-radius: 10px; background: white; font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; color: var(--ink); outline: none; transition: border-color 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--terracotta); }
+  .search-wrap::before {
+    content: '🔍'; position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%); font-size: 0.8rem; opacity: 0.5;
+  }
+  .filter-tabs { display: flex; gap: 4px; }
+  .tab {
+    padding: 8px 14px; border-radius: 8px; border: 1.5px solid transparent;
+    background: transparent; font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+    font-weight: 500; color: var(--ink-light); cursor: pointer; transition: all 0.15s;
+  }
+  .tab:hover { background: white; }
+  .tab.active { background: var(--ink); color: white; }
+  .btn-add {
+    padding: 10px 20px; background: var(--terracotta); color: white; border: none;
+    border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+    font-weight: 500; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-add:hover { background: #a8523b; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(192,101,74,0.3); }
+
+  /* Cards */
+  .friends-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .friend-card {
+    background: white; border-radius: 16px; padding: 20px; box-shadow: var(--shadow);
+    transition: all 0.2s; cursor: pointer; border: 2px solid transparent;
+    animation: fadeUp 0.3s ease both; position: relative; overflow: hidden;
+  }
+  .friend-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .friend-card.worst-overdue::before { background: var(--overdue); }
+  .friend-card.worst-soon::before { background: var(--soon); }
+  .friend-card.worst-ok::before { background: var(--ok); }
+  .friend-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); border-color: var(--ink-faint); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+  .avatar {
+    width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; font-size: 1.2rem; font-family: 'Lora', serif; font-weight: 600; flex-shrink: 0;
+  }
+  .card-name-block { flex: 1; min-width: 0; }
+  .card-name {
+    font-family: 'Lora', serif; font-size: 1.05rem; font-weight: 600; color: var(--ink);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .card-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+  .tag-chip { padding: 2px 8px; border-radius: 100px; font-size: 0.7rem; font-weight: 500; }
+
+  /* Two-track rows */
+  .card-tracks { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .track-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; border-radius: 8px; background: var(--cream);
+  }
+  .track-icon { font-size: 0.85rem; flex-shrink: 0; }
+  .track-label { font-size: 0.72rem; font-weight: 600; color: var(--ink-light); text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0; width: 52px; }
+  .track-status { flex: 1; font-size: 0.78rem; font-weight: 500; }
+  .track-status.overdue { color: var(--overdue); }
+  .track-status.soon { color: var(--soon); }
+  .track-status.ok { color: var(--ok); }
+  .track-interval { font-size: 0.7rem; color: var(--ink-faint); margin-left: auto; flex-shrink: 0; }
+
+  .card-notes {
+    font-size: 0.8rem; color: var(--ink-light); font-style: italic; background: var(--cream);
+    border-radius: 8px; padding: 7px 10px; margin-bottom: 12px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+
+  .card-actions { display: flex; gap: 6px; }
+  .btn-sm {
+    flex: 1; padding: 7px 6px; border-radius: 8px; border: 1.5px solid var(--ink-faint);
+    background: transparent; font-family: 'DM Sans', sans-serif; font-size: 0.72rem;
+    font-weight: 500; color: var(--ink-light); cursor: pointer; transition: all 0.15s; text-align: center;
+  }
+  .btn-sm.log-btn { flex: 0 0 auto; padding: 7px 10px; }
+  .btn-sm:hover { border-color: var(--sage); color: var(--sage); background: var(--sage-light); }
+  .btn-sm.text-btn:hover { border-color: var(--lavender); color: var(--lavender); background: var(--lavender-light); }
+  .btn-sm.person-btn:hover { border-color: var(--terracotta); color: var(--terracotta); background: var(--terracotta-light); }
+
+  .empty-state { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--ink-light); }
+  .empty-state .emoji { font-size: 3rem; margin-bottom: 16px; }
+  .empty-state h3 { font-family: 'Lora', serif; font-size: 1.2rem; margin-bottom: 8px; color: var(--ink); }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(44,36,22,0.4); backdrop-filter: blur(4px);
+    z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: var(--warm-white); border-radius: 20px; padding: 32px; width: 100%; max-width: 500px;
+    box-shadow: 0 20px 60px rgba(44,36,22,0.2); animation: slideUp 0.25s ease; max-height: 90vh; overflow-y: auto;
+  }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal h2 { font-family: 'Lora', serif; font-size: 1.4rem; margin-bottom: 24px; color: var(--ink); }
+
+  .form-group { margin-bottom: 18px; }
+  .form-group label {
+    display: block; font-size: 0.8rem; font-weight: 500; color: var(--ink-light);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%; padding: 10px 14px; border: 1.5px solid var(--ink-faint); border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--ink);
+    background: white; outline: none; transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--terracotta); }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .modal-section-label {
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px;
+    color: var(--ink-faint); margin: 20px 0 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .modal-section-label::after { content: ''; flex: 1; height: 1px; background: var(--ink-faint); }
+
+  .tag-options { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag-option {
+    padding: 5px 12px; border-radius: 100px; border: 1.5px solid var(--ink-faint); font-size: 0.78rem;
+    font-weight: 500; cursor: pointer; transition: all 0.15s; background: transparent; color: var(--ink-light); font-family: 'DM Sans', sans-serif;
+  }
+
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+  .btn-cancel {
+    flex: 1; padding: 11px; border-radius: 10px; border: 1.5px solid var(--ink-faint);
+    background: transparent; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: var(--ink-light); cursor: pointer;
+  }
+  .btn-save {
+    flex: 2; padding: 11px; border-radius: 10px; border: none; background: var(--ink); color: white;
+    font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: background 0.15s;
+  }
+  .btn-save:hover { background: var(--terracotta); }
+  .btn-delete {
+    padding: 11px 16px; border-radius: 10px; border: 1.5px solid var(--overdue); background: transparent;
+    color: var(--overdue); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-delete:hover { background: var(--overdue); color: white; }
+
+  /* Log modal */
+  .log-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .log-tab {
+    padding: 6px 14px; border-radius: 8px; border: 1.5px solid var(--ink-faint); font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem; font-weight: 500; color: var(--ink-light); cursor: pointer; background: transparent; transition: all 0.15s;
+  }
+  .log-tab.active { background: var(--ink); color: white; border-color: var(--ink); }
+  .log-list { margin-bottom: 16px; max-height: 180px; overflow-y: auto; }
+  .log-entry {
+    display: flex; align-items: flex-start; gap: 8px; padding: 9px 0;
+    border-bottom: 1px solid var(--ink-faint); font-size: 0.82rem;
+  }
+  .log-entry:last-child { border-bottom: none; }
+  .log-type-badge {
+    padding: 2px 8px; border-radius: 100px; font-size: 0.68rem; font-weight: 600; flex-shrink: 0; white-space: nowrap;
+  }
+  .log-type-badge.text { background: var(--lavender-light); color: var(--lavender); }
+  .log-type-badge.inperson { background: var(--terracotta-light); color: var(--terracotta); }
+  .log-date { color: var(--ink-light); font-size: 0.78rem; flex-shrink: 0; }
+  .log-note { color: var(--ink-light); font-style: italic; flex: 1; }
+
+  .log-type-toggle { display: flex; gap: 6px; margin-bottom: 10px; }
+  .type-btn {
+    flex: 1; padding: 8px; border-radius: 8px; border: 1.5px solid var(--ink-faint); font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; font-weight: 500; color: var(--ink-light); cursor: pointer; background: transparent; transition: all 0.15s; text-align: center;
+  }
+  .type-btn.selected.text-type { background: var(--lavender-light); color: var(--lavender); border-color: var(--lavender); }
+  .type-btn.selected.person-type { background: var(--terracotta-light); color: var(--terracotta); border-color: var(--terracotta); }
+
+  .import-area {
+    width: 100%; min-height: 120px; padding: 12px; border: 1.5px solid var(--ink-faint);
+    border-radius: 10px; font-size: 0.78rem; color: var(--ink); background: white; resize: vertical; outline: none;
+  }
+  .import-area:focus { border-color: var(--terracotta); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Keep <em>in touch</em></h1>
+    <p>A quiet reminder to reach out to the people who matter.</p>
+    <div class="header-actions">
+      <button class="btn-subtle" onclick="exportData()">⬇ Export backup</button>
+      <button class="btn-subtle" onclick="openImportModal()">⬆ Import backup</button>
+    </div>
+  </header>
+
+  <div class="status-bar" id="statusBar"></div>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Search people…" oninput="renderCards()">
+    </div>
+    <div class="filter-tabs">
+      <button class="tab active" onclick="setFilter('all', this)">All</button>
+      <button class="tab" onclick="setFilter('overdue', this)">Overdue</button>
+      <button class="tab" onclick="setFilter('soon', this)">Due soon</button>
+    </div>
+    <button class="btn-add" onclick="openAddModal()">+ Add person</button>
+  </div>
+
+  <div class="friends-grid" id="friendsGrid"></div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="editModal" style="display:none" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h2 id="modalTitle">Add someone</h2>
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" id="fName" placeholder="e.g. Maya">
+    </div>
+    <div class="form-group">
+      <label>Groups / tags</label>
+      <div class="tag-options" id="tagOptions"></div>
+    </div>
+    <div class="form-group">
+      <label>Notes (what to catch up on)</label>
+      <textarea id="fNotes" placeholder="Things to remember, topics to bring up…"></textarea>
+    </div>
+
+    <div class="modal-section-label">💬 Texting goal</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Text every</label>
+        <select id="fTextInterval">
+          <option value="7">1 week</option>
+          <option value="14" selected>2 weeks</option>
+          <option value="21">3 weeks</option>
+          <option value="30">1 month</option>
+          <option value="45">6 weeks</option>
+          <option value="60">2 months</option>
+          <option value="90">3 months</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Last texted</label>
+        <input type="date" id="fLastText">
+      </div>
+    </div>
+
+    <div class="modal-section-label">🤝 In-person goal</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>See in person every</label>
+        <select id="fPersonInterval">
+          <option value="7">1 week</option>
+          <option value="14">2 weeks</option>
+          <option value="21">3 weeks</option>
+          <option value="30" selected>1 month</option>
+          <option value="45">6 weeks</option>
+          <option value="60">2 months</option>
+          <option value="90">3 months</option>
+          <option value="180">6 months</option>
+          <option value="365">1 year</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Last saw in person</label>
+        <input type="date" id="fLastPerson">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-delete" id="btnDelete" style="display:none" onclick="deleteFriend()">Delete</button>
+      <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-save" onclick="saveFriend()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Log Modal -->
+<div class="modal-overlay" id="logModal" style="display:none" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h2 id="logModalTitle">Log</h2>
+    <div class="log-tabs">
+      <button class="log-tab active" onclick="setLogTab('all', this)">All</button>
+      <button class="log-tab" onclick="setLogTab('text', this)">💬 Texts</button>
+      <button class="log-tab" onclick="setLogTab('inperson', this)">🤝 In person</button>
+    </div>
+    <div class="log-list" id="logList"></div>
+
+    <div class="modal-section-label">Log a new interaction</div>
+    <div class="log-type-toggle">
+      <button class="type-btn text-type selected" id="typeBtnText" onclick="selectLogType('text')">💬 Texted</button>
+      <button class="type-btn person-type" id="typeBtnPerson" onclick="selectLogType('inperson')">🤝 Saw in person</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="logDate">
+      </div>
+      <div class="form-group">
+        <label>Note (optional)</label>
+        <input type="text" id="logNote" placeholder="e.g. Caught up about her trip">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeLogModal()">Close</button>
+      <button class="btn-save" onclick="saveLog()">Log interaction</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-overlay" id="importModal" style="display:none" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h2>Import backup</h2>
+    <p style="font-size:0.85rem;color:var(--ink-light);margin-bottom:16px;">Paste your exported JSON below. This will <strong>merge</strong> with your existing contacts — duplicates are skipped.</p>
+    <div class="form-group">
+      <label>Paste JSON here</label>
+      <textarea class="import-area" id="importText" placeholder='[{"name":"Maya",...}]'></textarea>
+    </div>
+    <div id="importMsg" style="font-size:0.82rem;margin-bottom:8px;"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeImportModal()">Cancel</button>
+      <button class="btn-save" onclick="importData()">Import</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'kit_friends_v2';
+const TAGS = [
+  { label: 'Family',       color: '#c0654a', bg: '#e8c4b8' },
+  { label: 'Close friend', color: '#7a9e7e', bg: '#c8deca' },
+  { label: 'Friend',       color: '#8b7db8', bg: '#d8d0f0' },
+  { label: 'Work',         color: '#c9972c', bg: '#f0e0b0' },
+  { label: 'Mentor',       color: '#5b8fa8', bg: '#c0dcea' },
+];
+
+let friends = [];
+let editingId = null;
+let logFriendId = null;
+let logTabFilter = 'all';
+let logTypeSelected = 'text';
+let activeFilter = 'all';
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) { friends = JSON.parse(raw); return; }
+    // Migrate from old v1 format
+    const old = localStorage.getItem('kit_friends_v1');
+    if (old) {
+      friends = JSON.parse(old).map(f => ({
+        ...f,
+        textInterval: f.interval || 14,
+        lastText: f.lastContact || '',
+        personInterval: 30,
+        lastPerson: '',
+        log: (f.log || []).map(e => ({ ...e, type: 'text' })),
+      }));
+      save();
+    }
+  } catch { friends = []; }
+}
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(friends)); }
+
+// ─── Date helpers ─────────────────────────────────────────────────────────────
+function parseLocalDate(dateStr) {
+  if (!dateStr) return null;
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function formatDate(dateStr, includeYear = false) {
+  const d = parseLocalDate(dateStr);
+  if (!d) return '—';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', ...(includeYear ? { year: 'numeric' } : {}) });
+}
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function daysSince(dateStr) {
+  if (!dateStr) return Infinity;
+  return Math.floor((Date.now() - parseLocalDate(dateStr).getTime()) / 86400000);
+}
+
+// ─── Status logic ─────────────────────────────────────────────────────────────
+function getTrackStatus(days, interval) {
+  if (days >= interval) return 'overdue';
+  if (days >= interval * 0.75) return 'soon';
+  return 'ok';
+}
+function getTrackLabel(days, interval, lastDateStr) {
+  if (!lastDateStr) return 'Never';
+  const status = getTrackStatus(days, interval);
+  if (status === 'overdue') {
+    const over = days - interval;
+    return over === 0 ? 'Due today' : `${over}d overdue`;
+  }
+  return `Due in ${interval - days}d`;
+}
+function getWorstStatus(f) {
+  const ts = getTrackStatus(daysSince(f.lastText),   f.textInterval   || 14);
+  const ps = getTrackStatus(daysSince(f.lastPerson), f.personInterval || 30);
+  const order = { overdue: 0, soon: 1, ok: 2 };
+  return order[ts] <= order[ps] ? ts : ps;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function getInitials(name) { return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(); }
+function getAvatarColors(name) {
+  const palette = [
+    ['#c0654a','#e8c4b8'],['#7a9e7e','#c8deca'],['#8b7db8','#d8d0f0'],
+    ['#c9972c','#f0e0b0'],['#5b8fa8','#c0dcea'],['#a05f8a','#e0c8d8']
+  ];
+  let hash = 0;
+  for (let c of name) hash = (hash * 31 + c.charCodeAt(0)) % palette.length;
+  return palette[Math.abs(hash)];
+}
+function intervalLabel(days) {
+  if (days >= 365) return `${Math.round(days/365)}yr`;
+  if (days >= 30)  return `${Math.round(days/30)}mo`;
+  return `${days}d`;
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function renderStatusBar() {
+  const overdue = friends.filter(f => getWorstStatus(f) === 'overdue').length;
+  const soon    = friends.filter(f => getWorstStatus(f) === 'soon').length;
+  const ok      = friends.filter(f => getWorstStatus(f) === 'ok').length;
+  document.getElementById('statusBar').innerHTML = `
+    <div class="stat-pill overdue"><div class="dot"></div>${overdue} overdue</div>
+    <div class="stat-pill soon"><div class="dot"></div>${soon} due soon</div>
+    <div class="stat-pill ok"><div class="dot"></div>${ok} on track</div>
+  `;
+}
+
+function renderCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const order = { overdue: 0, soon: 1, ok: 2 };
+  let list = friends.filter(f => {
+    const matchQ = f.name.toLowerCase().includes(q)
+      || (f.notes||'').toLowerCase().includes(q)
+      || (f.tags||[]).some(t => t.toLowerCase().includes(q));
+    const worst = getWorstStatus(f);
+    return matchQ && (activeFilter === 'all' || worst === activeFilter);
+  });
+  list.sort((a, b) => {
+    const diff = order[getWorstStatus(a)] - order[getWorstStatus(b)];
+    return diff !== 0 ? diff : a.name.localeCompare(b.name);
+  });
+
+  const grid = document.getElementById('friendsGrid');
+  if (list.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><div class="emoji">🌿</div><h3>No one here yet</h3><p>Add the people you want to stay close with.</p></div>`;
+    return;
+  }
+  grid.innerHTML = list.map((f, i) => {
+    const worst = getWorstStatus(f);
+    const [avatarColor, avatarBg] = getAvatarColors(f.name);
+    const tags = (f.tags||[]).map(t => {
+      const td = TAGS.find(x => x.label === t);
+      return td ? `<span class="tag-chip" style="background:${td.bg};color:${td.color}">${t}</span>` : '';
+    }).join('');
+    const textDays   = daysSince(f.lastText);
+    const personDays = daysSince(f.lastPerson);
+    const textStatus   = getTrackStatus(textDays,   f.textInterval   || 14);
+    const personStatus = getTrackStatus(personDays, f.personInterval || 30);
+    const textLbl   = getTrackLabel(textDays,   f.textInterval   || 14, f.lastText);
+    const personLbl = getTrackLabel(personDays, f.personInterval || 30, f.lastPerson);
+
+    return `
+    <div class="friend-card worst-${worst}" style="animation-delay:${i*0.04}s" onclick="openEditModal('${f.id}')">
+      <div class="card-header">
+        <div class="avatar" style="background:${avatarBg};color:${avatarColor}">${getInitials(f.name)}</div>
+        <div class="card-name-block">
+          <div class="card-name">${f.name}</div>
+          <div class="card-tags">${tags}</div>
+        </div>
+      </div>
+      <div class="card-tracks">
+        <div class="track-row">
+          <span class="track-icon">💬</span>
+          <span class="track-label">Text</span>
+          <span class="track-status ${textStatus}">${textLbl}</span>
+          <span class="track-interval">every ${intervalLabel(f.textInterval||14)}</span>
+        </div>
+        <div class="track-row">
+          <span class="track-icon">🤝</span>
+          <span class="track-label">In person</span>
+          <span class="track-status ${personStatus}">${personLbl}</span>
+          <span class="track-interval">every ${intervalLabel(f.personInterval||30)}</span>
+        </div>
+      </div>
+      ${f.notes ? `<div class="card-notes">${f.notes}</div>` : ''}
+      <div class="card-actions">
+        <button class="btn-sm log-btn" onclick="event.stopPropagation(); openLogModal('${f.id}')">📋</button>
+        <button class="btn-sm text-btn" onclick="event.stopPropagation(); quickLog('${f.id}','text')">💬 Texted</button>
+        <button class="btn-sm person-btn" onclick="event.stopPropagation(); quickLog('${f.id}','inperson')">🤝 Saw them</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function render() { renderStatusBar(); renderCards(); }
+
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderCards();
+}
+
+// ─── Quick log ────────────────────────────────────────────────────────────────
+function quickLog(id, type) {
+  const f = friends.find(x => x.id === id);
+  if (!f) return;
+  const today = todayStr();
+  if (type === 'text') f.lastText = today;
+  else f.lastPerson = today;
+  if (!f.log) f.log = [];
+  f.log.unshift({ date: today, type, note: type === 'text' ? 'Texted ✓' : 'Saw in person ✓' });
+  save(); render();
+}
+
+// ─── Add/Edit modal ───────────────────────────────────────────────────────────
+function buildTagOptions(selected = []) {
+  document.getElementById('tagOptions').innerHTML = TAGS.map(t => `
+    <button type="button" class="tag-option ${selected.includes(t.label) ? 'selected' : ''}"
+      style="${selected.includes(t.label) ? `color:${t.color};border-color:${t.color};background:${t.bg}` : ''}"
+      onclick="toggleTag(this,'${t.label}','${t.color}','${t.bg}')">${t.label}</button>
+  `).join('');
+}
+function toggleTag(el, label, color, bg) {
+  el.classList.toggle('selected');
+  if (el.classList.contains('selected')) { el.style.color = color; el.style.borderColor = color; el.style.background = bg; }
+  else { el.style.color = ''; el.style.borderColor = ''; el.style.background = ''; }
+}
+function getSelectedTags() {
+  return [...document.querySelectorAll('#tagOptions .tag-option.selected')].map(b => b.textContent);
+}
+
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add someone';
+  document.getElementById('fName').value = '';
+  document.getElementById('fTextInterval').value = '14';
+  document.getElementById('fPersonInterval').value = '30';
+  document.getElementById('fLastText').value = todayStr();
+  document.getElementById('fLastPerson').value = '';
+  document.getElementById('fNotes').value = '';
+  document.getElementById('btnDelete').style.display = 'none';
+  buildTagOptions([]);
+  document.getElementById('editModal').style.display = 'flex';
+}
+function openEditModal(id) {
+  const f = friends.find(x => x.id === id);
+  if (!f) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = f.name;
+  document.getElementById('fName').value = f.name;
+  document.getElementById('fTextInterval').value = f.textInterval || 14;
+  document.getElementById('fPersonInterval').value = f.personInterval || 30;
+  document.getElementById('fLastText').value = f.lastText || '';
+  document.getElementById('fLastPerson').value = f.lastPerson || '';
+  document.getElementById('fNotes').value = f.notes || '';
+  document.getElementById('btnDelete').style.display = 'block';
+  buildTagOptions(f.tags || []);
+  document.getElementById('editModal').style.display = 'flex';
+}
+function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
+
+function saveFriend() {
+  const name = document.getElementById('fName').value.trim();
+  if (!name) { document.getElementById('fName').focus(); return; }
+  const data = {
+    name,
+    textInterval:   parseInt(document.getElementById('fTextInterval').value),
+    personInterval: parseInt(document.getElementById('fPersonInterval').value),
+    lastText:   document.getElementById('fLastText').value,
+    lastPerson: document.getElementById('fLastPerson').value,
+    notes: document.getElementById('fNotes').value.trim(),
+    tags:  getSelectedTags(),
+  };
+  if (editingId) {
+    Object.assign(friends.find(x => x.id === editingId), data);
+  } else {
+    friends.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2), ...data, log: [] });
+  }
+  save(); closeEditModal(); render();
+}
+function deleteFriend() {
+  if (!confirm('Remove this person?')) return;
+  friends = friends.filter(x => x.id !== editingId);
+  save(); closeEditModal(); render();
+}
+
+// ─── Log modal ────────────────────────────────────────────────────────────────
+function setLogTab(tab, el) {
+  logTabFilter = tab;
+  document.querySelectorAll('.log-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderLogList();
+}
+function selectLogType(type) {
+  logTypeSelected = type;
+  document.getElementById('typeBtnText').classList.toggle('selected', type === 'text');
+  document.getElementById('typeBtnPerson').classList.toggle('selected', type === 'inperson');
+}
+function renderLogList() {
+  const f = friends.find(x => x.id === logFriendId);
+  if (!f) return;
+  const log = (f.log || []).filter(e => logTabFilter === 'all' || e.type === logTabFilter);
+  document.getElementById('logList').innerHTML = log.length === 0
+    ? '<p style="color:var(--ink-faint);font-size:0.82rem;padding:10px 0">No interactions logged yet.</p>'
+    : log.map(e => `
+      <div class="log-entry">
+        <span class="log-type-badge ${e.type === 'text' ? 'text' : 'inperson'}">${e.type === 'text' ? '💬 Text' : '🤝 In person'}</span>
+        <span class="log-date">${formatDate(e.date, true)}</span>
+        <span class="log-note">${e.note || ''}</span>
+      </div>`).join('');
+}
+function openLogModal(id) {
+  logFriendId = id;
+  logTabFilter = 'all';
+  logTypeSelected = 'text';
+  const f = friends.find(x => x.id === id);
+  document.getElementById('logModalTitle').textContent = `${f.name}'s log`;
+  document.getElementById('logDate').value = todayStr();
+  document.getElementById('logNote').value = '';
+  document.querySelectorAll('.log-tab').forEach((t, i) => t.classList.toggle('active', i === 0));
+  selectLogType('text');
+  renderLogList();
+  document.getElementById('logModal').style.display = 'flex';
+}
+function closeLogModal() { document.getElementById('logModal').style.display = 'none'; }
+function saveLog() {
+  const f = friends.find(x => x.id === logFriendId);
+  const date = document.getElementById('logDate').value;
+  const note = document.getElementById('logNote').value.trim();
+  if (!date) return;
+  if (!f.log) f.log = [];
+  f.log.unshift({ date, type: logTypeSelected, note });
+  if (logTypeSelected === 'text') {
+    f.lastText = [f.lastText, date].filter(Boolean).sort().reverse()[0];
+  } else {
+    f.lastPerson = [f.lastPerson, date].filter(Boolean).sort().reverse()[0];
+  }
+  save();
+  document.getElementById('logNote').value = '';
+  renderLogList();
+  render();
+}
+
+// ─── Export / Import ──────────────────────────────────────────────────────────
+function exportData() {
+  const json = JSON.stringify(friends, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `keep-in-touch-backup-${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function openImportModal() {
+  document.getElementById('importText').value = '';
+  document.getElementById('importMsg').textContent = '';
+  document.getElementById('importModal').style.display = 'flex';
+}
+function closeImportModal() { document.getElementById('importModal').style.display = 'none'; }
+function importData() {
+  const raw = document.getElementById('importText').value.trim();
+  const msg = document.getElementById('importMsg');
+  let parsed;
+  try { parsed = JSON.parse(raw); } catch {
+    msg.style.color = 'var(--overdue)';
+    msg.textContent = '✗ Invalid JSON — make sure you pasted the full backup file contents.';
+    return;
+  }
+  if (!Array.isArray(parsed)) {
+    msg.style.color = 'var(--overdue)';
+    msg.textContent = '✗ Expected an array of contacts.';
+    return;
+  }
+  const existingIds   = new Set(friends.map(f => f.id));
+  const existingNames = new Set(friends.map(f => f.name.toLowerCase()));
+  let added = 0;
+  parsed.forEach(f => {
+    if (!f.name) return;
+    if (f.id && existingIds.has(f.id)) return;
+    if (existingNames.has(f.name.toLowerCase())) return;
+    if (!f.id) f.id = Date.now().toString(36) + Math.random().toString(36).slice(2);
+    friends.push(f);
+    added++;
+  });
+  save(); render();
+  msg.style.color = 'var(--ok)';
+  msg.textContent = `✓ Imported ${added} contact${added !== 1 ? 's' : ''}${parsed.length - added > 0 ? ` (${parsed.length - added} skipped — already exist)` : ''}.`;
+  if (added > 0) setTimeout(closeImportModal, 1500);
+}
+
+function closeModal(e) {
+  if (e.target.classList.contains('modal-overlay')) {
+    closeEditModal(); closeLogModal(); closeImportModal();
+  }
+}
+
+load(); render();
+</script>
+</body>
+</html>
